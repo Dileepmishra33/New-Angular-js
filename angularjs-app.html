@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" ng-app="myApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AngularJS Simple App (Todo + User Form)</title>
+  <!-- AngularJS CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .card { border: 1px solid #ddd; padding: 16px; border-radius: 8px; max-width: 700px; }
+    .row { display:flex; gap:12px; }
+    input.ng-invalid.ng-touched { border-color: #e74c3c; }
+    .btn { padding:8px 12px; border-radius:6px; cursor:pointer; border:1px solid #ccc; }
+    .btn-primary { background:#3498db; color:white; border-color:#2980b9 }
+    .btn-danger { background:#e74c3c; color:white; border-color:#c0392b }
+  </style>
+</head>
+<body ng-controller="MainCtrl as vm">
+  <h2>AngularJS Simple App — Todo & User Form</h2>
+  <div class="card">
+    <h3>Todo List</h3>
+    <form name="todoForm" ng-submit="vm.addTodo()" novalidate>
+      <input type="text" ng-model="vm.newTodoText" placeholder="Add todo..." required />
+      <button class="btn btn-primary" type="submit" ng-disabled="todoForm.$invalid">Add</button>
+    </form>
+
+    <ul>
+      <li ng-repeat="t in vm.todos track by $index">
+        <input type="checkbox" ng-model="t.done"> 
+        <span ng-class="{done: t.done}" style="margin-left:8px">{{t.text}}</span>
+        <button class="btn btn-danger" style="margin-left:12px" ng-click="vm.removeTodo($index)">Delete</button>
+      </li>
+    </ul>
+
+    <p><strong>Remaining:</strong> {{ vm.remainingCount() }} / {{ vm.todos.length }}</p>
+  </div>
+
+  <br />
+
+  <div class="card">
+    <h3>User Form (Validation + Submit)</h3>
+    <form name="userForm" ng-submit="vm.saveUser(userForm.$valid)" novalidate>
+      <div>
+        <label>Name</label><br>
+        <input name="name" type="text" ng-model="vm.user.name" required ng-minlength="3" />
+        <div ng-show="userForm.name.$touched && userForm.name.$invalid">
+          <small ng-show="userForm.name.$error.required">Name is required.</small>
+          <small ng-show="userForm.name.$error.minlength">Minimum 3 characters.</small>
+        </div>
+      </div>
+
+      <div>
+        <label>Email</label><br>
+        <input name="email" type="email" ng-model="vm.user.email" required />
+        <div ng-show="userForm.email.$touched && userForm.email.$invalid">
+          <small ng-show="userForm.email.$error.required">Email is required.</small>
+          <small ng-show="userForm.email.$error.email">Enter a valid email.</small>
+        </div>
+      </div>
+
+      <div style="margin-top:8px">
+        <button class="btn btn-primary" type="submit" ng-disabled="userForm.$invalid">Save User</button>
+        <button class="btn" type="button" ng-click="vm.resetUser()">Reset</button>
+      </div>
+    </form>
+
+    <div ng-if="vm.savedUser">
+      <h4>Saved User</h4>
+      <p><strong>Name:</strong> {{vm.savedUser.name}}</p>
+      <p><strong>Email:</strong> {{vm.savedUser.email}}</p>
+    </div>
+  </div>
+
+  <script>
+    angular.module('myApp', [])
+      .controller('MainCtrl', function($timeout) {
+        const vm = this;
+
+        // Todo list sample data
+        vm.todos = [
+          { text: 'Learn AngularJS basics', done: false },
+          { text: 'Build small app', done: false }
+        ];
+
+        vm.newTodoText = '';
+
+        vm.addTodo = function() {
+          if (!vm.newTodoText) return;
+          vm.todos.push({ text: vm.newTodoText, done: false });
+          vm.newTodoText = '';
+        };
+
+        vm.removeTodo = function(index) {
+          vm.todos.splice(index, 1);
+        };
+
+        vm.remainingCount = function() {
+          return vm.todos.filter(t => !t.done).length;
+        };
+
+        // Simple user form handling
+        vm.user = {};
+        vm.savedUser = null;
+
+        vm.saveUser = function(isValid) {
+          if (!isValid) return;
+          // Simulate server save with $timeout
+          $timeout(function() {
+            vm.savedUser = angular.copy(vm.user);
+          }, 300);
+        };
+
+        vm.resetUser = function() {
+          vm.user = {};
+          vm.savedUser = null;
+        };
+      });
+  </script>
+
+  <style>
+    .done { text-decoration: line-through; color: #888; }
+    ul { list-style: none; padding-left: 0; }
+    li { margin:8px 0; }
+  </style>
+</body>
+</html>
